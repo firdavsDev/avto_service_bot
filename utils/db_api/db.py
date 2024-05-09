@@ -21,11 +21,14 @@ class Database:
         self.connection.commit()
 
     def insert_data(self, table_name, columns, data):
-        columns = ', '.join(columns)
-        data = ', '.join([f"'{value}'" for value in data])
-        self.cursor.execute(
-            f"INSERT INTO {table_name} ({columns}) VALUES ({data})")
-        self.connection.commit()
+        try:
+            columns = ', '.join(columns)
+            data = ', '.join([f"'{value}'" for value in data])
+            self.cursor.execute(
+                f"INSERT INTO {table_name} ({columns}) VALUES ({data})")
+            self.connection.commit()
+        except Exception as e:
+            print(f"Error: {e}")
 
     def get_data(self, table_name, columns):
         columns = ', '.join(columns)
