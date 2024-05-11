@@ -13,12 +13,12 @@ from keyboards.inline.service_type_btn import categoryMenu
 db = Database(path_to_db="data.db")
 # Avto servislar ma'lumotlari
 avto_servislar = {
-    "Avto elektrik": db.get_data("Avto_elektrik", ["location", "phone_number"]),
-    "Moy almashtirish": db.get_data("Moy_almashtirish", ["location", "phone_number"]),
-    "Avto yurish qismini ta'mirlash": db.get_data("Avto_yurish_qismini_tamirlash", ["location", "phone_number"]),
-    "Kuzovchi": db.get_data("Kuzovchi", ["location", "phone_number"]),
-    "Avto diagnostika": db.get_data("Avto_diagnostika", ["location", "phone_number"]),
-    "Avto detailing": db.get_data("Avto_detailing", ["location", "phone_number"])
+    "Avto elektrik": db.get_data("Avto_elektrik", ["location", "phone_number", "service_name"]),
+    "Moy almashtirish": db.get_data("Moy_almashtirish", ["location", "phone_number", "service_name"]),
+    "Avto yurish qismini ta'mirlash": db.get_data("Avto_yurish_qismini_tamirlash", ["location", "phone_number", "service_name"]),
+    "Kuzovchi": db.get_data("Kuzovchi", ["location", "phone_number", "service_name"]),
+    "Avto diagnostika": db.get_data("Avto_diagnostika", ["location", "phone_number", "service_name"]),
+    "Avto detailing": db.get_data("Avto_detailing", ["location", "phone_number", "service_name"])
 }
 
 
@@ -31,7 +31,6 @@ async def bot_start(message: types.Message):
 @dp.callback_query_handler(lambda text: [text == i for i in ['Avto elektrik', 'Moy almashtirish', "Avto yurish qismini ta'mirlash", 'Kuzovchi', 'Avto diagnostika', 'Avto detailing']],  state=LocationState.Choice_service)
 async def buy_courses(call: CallbackQuery, state: FSMContext):
     callback_data = call.data
-    print("avto_servislar", avto_servislar)
     selected_service = avto_servislar[callback_data]
     await state.update_data(
         {"selected_service": selected_service}
@@ -49,11 +48,11 @@ async def process_location_step(message: types.Message, state: FSMContext):
     nearest_services = find_nearest_services(user_location, selected_service)
 
     for i, (service_info, distance) in enumerate(nearest_services, start=1):
-        print("service_info", service_info)
-        print("distance", distance)
-        print("i", i)
         service_info_full = f"{i}.Masofa: {distance:.2f} km\n"
-        service_info_full += f"Telefon raqami: {service_info['phone_number']}"
+        service_info_full += f"Nomi: {service_info['service_name']}\n"
+        service_info_full += f"Telefon raqami: {
+            service_info['phone_number']}\n"
+        service_info_full += "Ish vaqti: 9:00 - 18:00"
 
         await message.answer(service_info_full)
         await message.answer_location(latitude=service_info['location'][0], longitude=service_info['location'][1])
@@ -62,8 +61,6 @@ async def process_location_step(message: types.Message, state: FSMContext):
 
 def find_nearest_services(user_location, services, count=3):
     nearest_services = []
-    print("services", services)
-    # convert 'location': '(41.345678, 69.345678)', to tuple in every service
     for service in services:
         service['location'] = tuple(map(float,
                                         service['location'].strip('()').split(', ')))
