@@ -36,7 +36,7 @@ async def buy_courses(call: CallbackQuery, state: FSMContext):
         {"selected_service": selected_service}
     )
     await call.message.delete()
-    await call.message.answer("Hozirgi joylashuvingizni yuboring:")
+    await call.message.answer("Hozirgi joylashuvingizni yuboring: ")
     await LocationState.Location.set()
 
 
